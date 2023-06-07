@@ -1,0 +1,7 @@
+div[id="root"] > section:nth-child(2) > p:nth-child(1) > span:nth-child(1) > button:nth-child(2) {
+    width: 15rem;
+    height:10rem;
+    background-color: aqua;
+}
+
+ 
