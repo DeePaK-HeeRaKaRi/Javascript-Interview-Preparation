@@ -56,10 +56,11 @@ const sarr=[upperCase,split1,rev,join,append]
 const initialValue='deepak'
 
 const reverseInitialValue=sarr.reduce((prevValue,curValue) => {
-    const nextValue=curValue(prevValue)
-    return nextValue
+    prevValue=curValue(prevValue)
+    console.log('next Value',prevValue)
+    return prevValue
 },initialValue)
-console.log(reverseInitialValue)
+console.log("reverseInitialValue", reverseInitialValue);
 
 // let v=["deepak","kumar"]
 // console.log(v.reverse())
