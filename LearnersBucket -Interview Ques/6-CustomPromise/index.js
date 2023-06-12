@@ -14,10 +14,11 @@ class MyPromise{
     #onFailureBinded=this.#onFail.bind(this)
     constructor(cb){
         try{
+            console.log('-cb',cb)
             cb(this.#onSuccessBinded,this.#onFailureBinded)
         }
         catch(e){
-            this.onFail(e)
+            this.#onFail(e)
         } 
     }
     #runCallbacks(){
@@ -32,12 +33,13 @@ class MyPromise{
             this.#catchCbs.forEach(callback => {
                 callback(this.#value)
             })
-            // .then() .then() new promise so previous callbacks should be removed
+            // .catch() .catch() new promise so previous callbacks should be removed
             this.#catchCbs=[]
         }
     }
     //  #it should not be accessed outside of the class
     #onSuccess(value){
+        console.log('------------value',value)
         // whenever success or failed we make sure that we dont actually execute the code immmediately just wait for microseconds
         queueMicrotask(() => {
             if(this.#state !== STATE.PENDING) return
@@ -50,6 +52,7 @@ class MyPromise{
             // .then(())
             // so if it has a promise finish that promise
             if(value instanceof MyPromise){
+                console.log('yes instance---------')
                 value.then(this.#onSuccessBinded,this.#onFailureBinded)
             }
             this.#value=value
@@ -90,19 +93,23 @@ class MyPromise{
     // }
 
     // chaining
+    // p.then(()=>{},()=>{})  then catch
     then(thenCb,catchCb){
+        // console.log('-----------then',thenCb,catchCb)
         return new MyPromise((resolve,reject) => {
             this.#thenCbs.push(result => {
                 // .then().catch().then() so if 1st then is executed we have to skip 2nd catch()
+                // .then(()=>{console.log('modfjgnf)})
                 if(thenCb == null){
                     resolve(result)
                     return 
                 }
                 try{
                     // .then(return 'hi').catch().then() hi should passs to the next then
-                    resolve(thenCb(result))
+                    // resolve with prev promise
+                    return resolve(thenCb(result));
                 }catch(error){
-                    reject(error)
+                    return reject(error);
                 }
             })
 
@@ -114,15 +121,16 @@ class MyPromise{
                 }
                 try{
                      
-                    resolve(catchCb(result))
+                    return reject(catchCb(result));
                 }catch(error){
-                    reject(error)
+                    return reject(error);
                 }
             })
         })
     }
 
     catch(cb){
+        console.log(cb)
         this.then(undefined,cb)
     }
 
@@ -139,25 +147,113 @@ class MyPromise{
         }
         )
     }
-    static resolve(value){
-        return new MyPromise((resolve) => {
-            resolve(value)
-        })
-    }
-    static reject(value){
-        return new MyPromise((resolve,reject) => {
-            resolve(value)
-        })
-    }
+    // static resolve(value){
+    //     return new MyPromise((resolve) => {
+    //         resolve(value)
+    //     })
+    // }
+    // static reject(value){
+    //     return new MyPromise((resolve,reject) => {
+    //         resolve(value)
+    //     })
+    // }
 }
-const p=new MyPromise((resolve,reject) => {
-    setTimeout(() => {
-        resolve('hello')
-    },2000)
-})
-p.then((value) => {
-    console.log(value)
-})
+// const p=new MyPromise((resolve,reject) => {
+//     setTimeout(() => {
+//       // reject(new Error('Deepak '))
+//       resolve("Deepak");
+//       // resolve('kumar')  need to call only once so keep this check  if(this.#state !== STATE.PENDING) return in above , same will aply to reject
+
+//       // resolve("kumar");
+//       // resolve("kumar");
+//     },2000)
+// })
+// p.then((value) => {
+//     console.log('result value-',value)
+// })
+// .catch((err)=>{
+//     console.log(err)
+     
+// })
+let cart = ["shoes", "kurtha", "pant"];
+
+function createOrder(cart) {
+  const pr = new MyPromise(function (resolve, reject) {
+    // createOrder
+    // validateOrder from db
+    console.log("validate", !validCart(cart));
+    if (!validCart(cart)) {
+      const err = new Error("Cart is not valid");
+      reject(err);
+    }
+    // fetch ordreId
+    const orderid = "12345";
+    if (orderid) {
+      setTimeout(() => {
+        resolve(orderid);
+      }, 2000);
+    } else {
+      reject(new Error("Order is not valid"));
+    }
+  });
+  return pr;
+}
+function validCart(cart) {
+  return false;
+}
+
+function proceedToPayment(orderId) {
+  return new MyPromise(function (resolve, reject) {
+    // setTimeout(()=>{
+    //     resolve("Your Payment was Sucessfull")
+    // },2000)
+    if (!validCart("fhhfdf")) {
+      reject(new Error("No Payment"));
+    } else {
+      resolve("Your Payment was Sucessfull");
+    }
+
+    // const err=new Error('Payment Failed')
+    // reject(err)
+  });
+}
+
+createOrder(cart)
+  // if anyone we will get reject it will simply execute the catch block
+  // and it will not execute after .then method
+  // console.log('cart is',cart)
+  .then(function (orderId) {
+    console.log("orderid------", orderId);
+    return orderId;
+  })
+  // if we want catch only for creating order than place here else place bottom
+  .catch(function (err) {
+    console.log("ordeer-------", err.message);
+  })
+  .then(function (orderId) {
+    return proceedToPayment(orderId);
+  })
+  .then(function (paymentInfo) {
+    console.log("payment Info ->", paymentInfo);
+    return paymentInfo;
+  })
+  .catch(function (err) {
+    console.log(err.message);
+  })
+  .then(function (paymentDetails) {
+    console.log(
+      "NO matter what happens, i will definitely called",
+      paymentDetails
+    );
+    return "okoko1";
+  })
+  .finally(() => {
+    console.log("FInished----------------");
+    return "okoko";
+  })
+  .then((dummy) => {
+    console.log("after finished", dummy);
+  });
 
 // module.exports=MyPromise
 
@@ -167,3 +263,15 @@ p.then((value) => {
 //     return "hi"
 // })
 // .then(())
+
+// const res=new Promise((resolve,reject)=>{
+//     setTimeout(()=>{
+//         reject(new Error('deepak'))
+//     },1000)
+// })
+// res.then((val)=>{
+//     console.log(val)
+// })
+// .catch((err)=>{
+//     console.log(err)
+// })

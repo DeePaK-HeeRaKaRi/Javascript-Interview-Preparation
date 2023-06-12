@@ -40,7 +40,7 @@ function createOrder(cart){
         // validateOrder from db
         console.log('validate',!validCart(cart))
         if(!validCart(cart)){
-            const err = new Error('Card is not valid')
+            const err = new Error('Cart is not valid')
             reject(err)
         }
         // fetch ordreId
@@ -49,6 +49,9 @@ function createOrder(cart){
             setTimeout(()=>{
                 resolve(orderid)
             },2000) 
+        }
+        else{
+            reject(new Error('Order is not valid'))
         }
     })
     return pr
@@ -62,7 +65,12 @@ function proceedToPayment(orderId){
         // setTimeout(()=>{
         //     resolve("Your Payment was Sucessfull")
         // },2000)
-        resolve("Your Payment was Sucessfull")
+        if(!validCart('fhhfdf')){
+            reject(new Error('No Payment'))
+        }else{
+            resolve("Your Payment was Sucessfull");
+        }
+        
         // const err=new Error('Payment Failed')
         // reject(err)
        
@@ -74,13 +82,13 @@ createOrder(cart)
 // and it will not execute after .then method
     // console.log('cart is',cart)
     .then(function(orderId){
-        console.log(orderId)
+        console.log('orderid------',orderId)
         return orderId
     })
     // if we want catch only for creating order than place here else place bottom
-    // .catch(function(err){
-    //     console.log(err.message)
-    // })
+    .catch(function(err){
+        console.log('ordeer-------',err.message)
+    })
     .then(function(orderId){
         return proceedToPayment(orderId)
     })
@@ -92,5 +100,16 @@ createOrder(cart)
         console.log(err.message)
     })
     .then(function(paymentDetails){
-        console.log('NO matter what happens, i will definitely called')
+        console.log(
+          "NO matter what happens, i will definitely called",
+          paymentDetails
+        );
+        return 'okoko1'
+    })
+    .finally(()=>{
+        console.log('FInished----------------')
+        return 'okoko'
+    })
+    .then((dummy)=>{
+        console.log('after finished',dummy)
     })
